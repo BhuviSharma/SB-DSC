@@ -77,15 +77,13 @@ different costs to members (the listed costs are per half-hour 'slot'), and
 the guest user's ID is always 0. Include in your output the name of the
 facility, the name of the member formatted as a single column, and the cost.
 Order by descending cost, and do not use any subqueries. */
-select * from (
 select f.name as facilityname, concat_ws(' ', m.firstname, m.surname) as membername, 
 case when b.memid = 0 then sum(f.guestcost*b.slots) else sum(f.membercost*b.slots) end as totalmembercost 
 from country_club.Bookings b  
 inner join country_club.Facilities f on f.facid = b.facid 
 inner join country_club.Members m on m.memid = b.memid
 where b.starttime like '2012-09-14%'
-group By facilityname, membername ) s
-where s.totalmembercost > 30
+group By facilityname, membername having totalmembercost > 30 
 order By totalmembercost desc
 
 
@@ -95,7 +93,6 @@ order By totalmembercost desc
 /* Q10: Produce a list of facilities with a total revenue less than 1000.
 The output of facility name and total revenue, sorted by revenue. Remember
 that there's a different cost for guests and members! */
-select * from (
 select f.name as facilityname,
 -- calculate total earnings from member and guest on court booking
 (case when b.memid = 0 then sum(f.guestcost*b.slots) else sum(f.membercost*b.slots) end)-
@@ -104,12 +101,8 @@ select f.name as facilityname,
 (SELECT period_diff(date_format(max(starttime), '%Y%m'), date_format(min(starttime), '%Y%m')) as months from country_club.Bookings where facid= f.facid))) as totalrevenue
 from country_club.Facilities f
 inner join country_club.Bookings b on b.facid = f.facid
-group By facilityname, f.initialoutlay, f.monthlymaintenance ) s
-where s.totalrevenue < 1000 
+group By facilityname, f.initialoutlay, f.monthlymaintenance having totalrevenue < 1000 
 order By totalrevenue
-
-
-
 
 
 
